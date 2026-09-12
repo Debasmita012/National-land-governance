@@ -1,0 +1,8 @@
+venv/
+__pycache__/
+*.pyc
+.env
+backend/.env
+.vscode/
+data/processed/
+*.log
