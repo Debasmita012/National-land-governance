@@ -1,5 +1,8 @@
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
+from app.routes.analytics import (
+    router as analytics_router
+)
 from app.routes.datasets import router as datasets_router
 from app.routes.documents import router as documents_router
 from app.routes.evidence_cards import router as evidence_cards_router
@@ -19,9 +22,28 @@ from app.routes.carbon_impact import (
 from app.routes.policy_analysis import (
     router as policy_analysis_router
 )
+
+from app.routes.policies import (
+    router as policies_router
+)
+from app.routes.gis_layers import (
+    router as gis_layers_router
+)
+from app.routes.sandbox import router as sandbox_router
+
 app = FastAPI(
     title="National Land Governance Platform",
     version="1.0.0"
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -39,6 +61,17 @@ app.include_router(
 app.include_router(
     policy_analysis_router
 )
+app.include_router(
+    analytics_router
+)
+app.include_router(
+    policies_router
+)
+app.include_router(
+    gis_layers_router
+)
+app.include_router(sandbox_router)
+
 @app.get("/")
 def root():
     return {
