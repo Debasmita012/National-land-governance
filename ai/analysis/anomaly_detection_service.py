@@ -74,7 +74,8 @@ class AnomalyDetectionService:
             numeric_values
         ):
 
-            is_anomaly = (
+            # Convert NumPy boolean to normal Python bool
+            is_anomaly = bool(
                 predictions[index] == -1
             )
 
@@ -83,8 +84,8 @@ class AnomalyDetectionService:
 
             results.append(
                 {
-                    "index": index,
-                    "value": value,
+                    "index": int(index),
+                    "value": float(value),
                     "is_anomaly": is_anomaly,
                     "anomaly_score": round(
                         float(scores[index]),
@@ -98,24 +99,31 @@ class AnomalyDetectionService:
             - anomaly_count
         )
 
+        anomaly_percentage = round(
+            (
+                anomaly_count
+                / len(numeric_values)
+            ) * 100,
+            2
+        )
+
         return {
 
-            "total_values": len(
-                numeric_values
+            "total_values": int(
+                len(numeric_values)
             ),
 
-            "anomaly_count": anomaly_count,
+            "anomaly_count": int(
+                anomaly_count
+            ),
 
-            "normal_count": normal_count,
+            "normal_count": int(
+                normal_count
+            ),
 
-            "anomaly_percentage": round(
-                (
-                    anomaly_count
-                    / len(numeric_values)
-                ) * 100,
-                2
+            "anomaly_percentage": float(
+                anomaly_percentage
             ),
 
             "results": results
         }
-    
