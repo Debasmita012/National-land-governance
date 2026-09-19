@@ -1,3 +1,5 @@
+import LandIntelligence from "./pages/LandIntelligence";
+
 import { useState } from "react";
 import Sidebar from "./components/Sidebar";
 
@@ -180,7 +182,8 @@ function App() {
 
       case "provenance":
         return <Provenance key="provenance" />;
-
+      case "land-intelligence":
+         return <LandIntelligence />;
       default:
         return <Dashboard onNavigate={navigateTo} />;
     }

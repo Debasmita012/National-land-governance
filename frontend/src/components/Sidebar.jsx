@@ -32,6 +32,12 @@ function Sidebar({ activePage, setActivePage, onOpenHelp }) {
       badgePulse: true,
     },
     {
+      id: "land-intelligence",
+      icon: "🧠",
+      label: "Land Intelligence",
+      badge: "AI",
+    },
+    {
       id: "evidence",
       icon: "🤖",
       label: "Evidence Engine",

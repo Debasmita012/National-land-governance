@@ -1,0 +1,11 @@
+parcel_id,land_use,dispute_count,population,latitude,longitude,area
+P001,Agricultural,2,1200,26.1445,91.7362,4.5
+P002,Residential,5,1800,26.1500,91.7400,3.2
+P003,Agricultural,1,900,26.1550,91.7450,6.1
+P004,Industrial,7,2500,26.1600,91.7500,2.8
+P005,Forest,0,500,26.1650,91.7550,10.4
+P006,Agricultural,3,1500,26.1700,91.7600,5.3
+P007,Residential,4,2100,26.1750,91.7650,2.9
+P008,Forest,1,650,26.1800,91.7700,8.7
+P009,Agricultural,2,1300,26.1850,91.7750,4.9
+P010,Industrial,6,2700,26.1900,91.7800,3.1

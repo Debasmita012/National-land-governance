@@ -5,6 +5,7 @@ import {
   Marker,
   Popup,
   Circle,
+  CircleMarker,
   Polygon,
   useMap,
 } from "react-leaflet";
@@ -144,6 +145,18 @@ function GISExplorer() {
   const [loadingLayers, setLoadingLayers] = useState(true);
 
   const [layerError, setLayerError] = useState("");
+  // -------------------------------------------------------
+  // AI LAND RISK HOTSPOT STATE
+  // -------------------------------------------------------
+
+  const [hotspotCurrentFile, setHotspotCurrentFile] = useState(null);
+  const [hotspotHistoricalFile, setHotspotHistoricalFile] = useState(null);
+  const [hotspotData, setHotspotData] = useState(null);
+  const [hotspotLoading, setHotspotLoading] = useState(false);
+  const [hotspotError, setHotspotError] = useState("");
+  const [selectedHotspot, setSelectedHotspot] = useState(null);
+  const [showRiskHotspots, setShowRiskHotspots] = useState(true);
+
 
 
   // -------------------------------------------------------
@@ -251,6 +264,81 @@ function GISExplorer() {
 
 
   // -------------------------------------------------------
+
+  // -------------------------------------------------------
+  // AI LAND RISK HOTSPOT HELPERS
+  // -------------------------------------------------------
+
+  const getRiskColor = (level) => {
+    if (level === "Critical") return "#dc2626";
+    if (level === "High") return "#f97316";
+    if (level === "Moderate") return "#eab308";
+    if (level === "Low") return "#16a34a";
+    return "#64748b";
+  };
+
+  const getRiskBackground = (level) => {
+    if (level === "Critical") return "#fef2f2";
+    if (level === "High") return "#fff7ed";
+    if (level === "Moderate") return "#fefce8";
+    if (level === "Low") return "#f0fdf4";
+    return "#f8fafc";
+  };
+
+  const analyzeAndMapRisks = async () => {
+    if (!hotspotCurrentFile) {
+      setHotspotError("Please select a current land dataset.");
+      return;
+    }
+
+    try {
+      setHotspotLoading(true);
+      setHotspotError("");
+      setSelectedHotspot(null);
+
+      const formData = new FormData();
+      formData.append("current_file", hotspotCurrentFile);
+
+      if (hotspotHistoricalFile) {
+        formData.append("historical_file", hotspotHistoricalFile);
+      }
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/land-analysis/hotspots",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.detail || "Unable to generate land-risk hotspots."
+        );
+      }
+
+      setHotspotData(data);
+      setShowRiskHotspots(true);
+
+      if (data?.geojson?.features?.length) {
+        setSelectedHotspot(data.geojson.features[0]);
+      }
+    } catch (error) {
+      console.error("Land hotspot generation error:", error);
+      setHotspotError(
+        error.message || "Unable to generate land-risk hotspots."
+      );
+    } finally {
+      setHotspotLoading(false);
+    }
+  };
+
+  const hotspotFeatures = hotspotData?.geojson?.features || [];
+  const riskDistribution =
+    hotspotData?.risk_summary?.risk_distribution || {};
+
   // RENDER
   // -------------------------------------------------------
 
@@ -458,6 +546,21 @@ function GISExplorer() {
 
             </div>
 
+              {/* AI LAND RISK HOTSPOTS */}
+
+              <button
+                className={`layer-toggle-btn ${
+                  showRiskHotspots ? "active" : ""
+                }`}
+                onClick={() =>
+                  setShowRiskHotspots((previous) => !previous)
+                }
+              >
+                <span>🔥 AI Land Risk Hotspots</span>
+                <span>{showRiskHotspots ? "ON" : "OFF"}</span>
+              </button>
+
+
           </div>
 
 
@@ -508,6 +611,150 @@ function GISExplorer() {
 
           </div>
 
+
+          {/* AI LAND RISK HOTSPOT UPLOAD */}
+
+          <div
+            style={{
+              marginTop: "14px",
+              padding: "12px",
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: "8px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: "12px",
+                fontWeight: 800,
+                color: "var(--slate-700)",
+                marginBottom: "4px",
+              }}
+            >
+              🔥 Land Risk Hotspots
+            </div>
+
+            <div
+              style={{
+                fontSize: "10px",
+                color: "var(--slate-500)",
+                lineHeight: 1.5,
+                marginBottom: "10px",
+              }}
+            >
+              Upload parcel data containing latitude and longitude
+              to generate explainable GIS risk points.
+            </div>
+
+            <div
+              style={{
+                fontSize: "10px",
+                fontWeight: 700,
+                color: "var(--slate-600)",
+                marginBottom: "4px",
+              }}
+            >
+              Current Dataset *
+            </div>
+
+            <input
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={(event) =>
+                setHotspotCurrentFile(event.target.files?.[0] || null)
+              }
+              style={{
+                width: "100%",
+                fontSize: "10px",
+                marginBottom: "9px",
+              }}
+            />
+
+            <div
+              style={{
+                fontSize: "10px",
+                fontWeight: 700,
+                color: "var(--slate-600)",
+                marginBottom: "4px",
+              }}
+            >
+              Historical Dataset
+            </div>
+
+            <input
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={(event) =>
+                setHotspotHistoricalFile(event.target.files?.[0] || null)
+              }
+              style={{
+                width: "100%",
+                fontSize: "10px",
+                marginBottom: "10px",
+              }}
+            />
+
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={analyzeAndMapRisks}
+              disabled={hotspotLoading}
+              style={{ width: "100%" }}
+            >
+              {hotspotLoading ? "Analyzing..." : "Analyze & Map Risks"}
+            </button>
+
+            {hotspotError && (
+              <div
+                style={{
+                  marginTop: "8px",
+                  padding: "7px",
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  borderRadius: "6px",
+                  color: "#dc2626",
+                  fontSize: "10px",
+                }}
+              >
+                {hotspotError}
+              </div>
+            )}
+
+            {hotspotData && (
+              <div
+                style={{
+                  marginTop: "10px",
+                  padding: "8px",
+                  background: "#ecfdf5",
+                  border: "1px solid #a7f3d0",
+                  borderRadius: "6px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#047857",
+                    fontSize: "10px",
+                    fontWeight: 800,
+                  }}
+                >
+                  ✓ {hotspotData.risk_summary?.mapped_records ?? 0} parcels mapped
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "5px",
+                    color: "#64748b",
+                    fontSize: "9px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Critical: {riskDistribution.Critical ?? 0}
+                  {" • "}High: {riskDistribution.High ?? 0}
+                  {" • "}Moderate: {riskDistribution.Moderate ?? 0}
+                  {" • "}Low: {riskDistribution.Low ?? 0}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* PARCEL SEARCH */}
 
@@ -795,6 +1042,46 @@ function GISExplorer() {
               </span>
             </div>
 
+            <div
+              style={{
+                marginTop: "9px",
+                paddingTop: "8px",
+                borderTop: "1px solid #e2e8f0",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 800,
+                  color: "#475569",
+                  marginBottom: "6px",
+                }}
+              >
+                AI LAND RISK
+              </div>
+
+              {[
+                ["#dc2626", "Critical Risk"],
+                ["#f97316", "High Risk"],
+                ["#eab308", "Moderate Risk"],
+                ["#16a34a", "Low Risk"],
+              ].map(([color, label]) => (
+                <div className="legend-row" key={label}>
+                  <span
+                    style={{
+                      width: "10px",
+                      height: "10px",
+                      borderRadius: "50%",
+                      background: color,
+                      display: "inline-block",
+                    }}
+                  ></span>
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
+
+
           </div>
 
         </div>
@@ -909,7 +1196,138 @@ function GISExplorer() {
               ))}
 
 
-            {/* FLOOD PILOT GEOMETRY */}
+                          {/* REAL LAND RISK HOTSPOTS */}
+
+              {showRiskHotspots &&
+                hotspotFeatures.map((feature, index) => {
+                  const properties = feature.properties || {};
+                  const coordinates = feature.geometry?.coordinates || [];
+                  const longitude = coordinates[0];
+                  const latitude = coordinates[1];
+
+                  if (
+                    typeof latitude !== "number" ||
+                    typeof longitude !== "number"
+                  ) {
+                    return null;
+                  }
+
+                  const riskColor = getRiskColor(properties.risk_level);
+
+                  return (
+                    <CircleMarker
+                      key={`risk-${properties.parcel_id || index}`}
+                      center={[latitude, longitude]}
+                      radius={
+                        properties.risk_level === "Critical"
+                          ? 12
+                          : properties.risk_level === "High"
+                          ? 10
+                          : 8
+                      }
+                      pathOptions={{
+                        color: riskColor,
+                        fillColor: riskColor,
+                        fillOpacity: 0.72,
+                        weight: 2,
+                      }}
+                      eventHandlers={{
+                        click: () => setSelectedHotspot(feature),
+                      }}
+                    >
+                      <Popup>
+                        <div
+                          style={{
+                            minWidth: "220px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: "13px",
+                              fontWeight: 800,
+                              color: "#0f172a",
+                              marginBottom: "7px",
+                            }}
+                          >
+                            Parcel {properties.parcel_id}
+                          </div>
+
+                          <div
+                            style={{
+                              display: "inline-block",
+                              padding: "3px 7px",
+                              borderRadius: "999px",
+                              background: getRiskBackground(properties.risk_level),
+                              color: riskColor,
+                              fontSize: "10px",
+                              fontWeight: 800,
+                              marginBottom: "8px",
+                            }}
+                          >
+                            {properties.risk_level} Risk
+                          </div>
+
+                          <div>
+                            <strong>Risk Score:</strong>{" "}
+                            {properties.risk_score}
+                          </div>
+
+                          <div>
+                            <strong>Land Use:</strong>{" "}
+                            {properties.current_land_use ||
+                              properties.land_use ||
+                              "N/A"}
+                          </div>
+
+                          {properties.land_use_changed && (
+                            <div>
+                              <strong>Transition:</strong>{" "}
+                              {properties.land_use_transition || "Changed"}
+                            </div>
+                          )}
+
+                          <div>
+                            <strong>Anomaly:</strong>{" "}
+                            {properties.anomaly_detected
+                              ? "Detected"
+                              : "Not detected"}
+                          </div>
+
+                          {properties.why?.length > 0 && (
+                            <div
+                              style={{
+                                marginTop: "8px",
+                                paddingTop: "7px",
+                                borderTop: "1px solid #e2e8f0",
+                              }}
+                            >
+                              <strong>Why is this parcel at risk?</strong>
+
+                              <ul
+                                style={{
+                                  margin: "5px 0 0 16px",
+                                  padding: 0,
+                                }}
+                              >
+                                {properties.why.map((reason, reasonIndex) => (
+                                  <li
+                                    key={reasonIndex}
+                                    style={{ marginBottom: "3px" }}
+                                  >
+                                    {reason}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </Popup>
+                    </CircleMarker>
+                  );
+                })}
+
+{/* FLOOD PILOT GEOMETRY */}
 
             {layers.floodRisk && (
               <Circle
@@ -947,6 +1365,168 @@ function GISExplorer() {
 
       </div>
 
+
+      {/* SELECTED AI RISK HOTSPOT */}
+
+      {selectedHotspot && (
+        <div
+          style={{
+            marginTop: "16px",
+            padding: "16px",
+            background: "#ffffff",
+            border: "1px solid #e2e8f0",
+            borderRadius: "10px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 800,
+                  color: "#64748b",
+                  textTransform: "uppercase",
+                  marginBottom: "4px",
+                }}
+              >
+                AI Land Risk Hotspot
+              </div>
+
+              <div
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 800,
+                  color: "#0f172a",
+                }}
+              >
+                Parcel {selectedHotspot.properties?.parcel_id || "Unknown"}
+              </div>
+            </div>
+
+            <div
+              style={{
+                padding: "6px 10px",
+                borderRadius: "999px",
+                background: getRiskBackground(
+                  selectedHotspot.properties?.risk_level
+                ),
+                color: getRiskColor(
+                  selectedHotspot.properties?.risk_level
+                ),
+                fontSize: "11px",
+                fontWeight: 800,
+              }}
+            >
+              {selectedHotspot.properties?.risk_level || "Unknown"} Risk
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(150px, 1fr))",
+              gap: "10px",
+              marginTop: "14px",
+            }}
+          >
+            {[
+              ["RISK SCORE", selectedHotspot.properties?.risk_score ?? "—"],
+              [
+                "LAND USE",
+                selectedHotspot.properties?.current_land_use ||
+                  selectedHotspot.properties?.land_use ||
+                  "—",
+              ],
+              [
+                "TRANSITION",
+                selectedHotspot.properties?.land_use_transition ||
+                  "No detected change",
+              ],
+              [
+                "ANOMALY",
+                selectedHotspot.properties?.anomaly_detected
+                  ? "Detected"
+                  : "Not detected",
+              ],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                style={{
+                  padding: "10px",
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "7px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "9px",
+                    color: "#64748b",
+                    fontWeight: 700,
+                  }}
+                >
+                  {label}
+                </div>
+                <div
+                  style={{
+                    marginTop: "3px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                  }}
+                >
+                  {value}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {selectedHotspot.properties?.why?.length > 0 && (
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "11px",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  color: "#334155",
+                  marginBottom: "5px",
+                }}
+              >
+                Why is this parcel at risk?
+              </div>
+
+              <ul
+                style={{
+                  margin: "0 0 0 17px",
+                  padding: 0,
+                  color: "#64748b",
+                  fontSize: "11px",
+                  lineHeight: 1.6,
+                }}
+              >
+                {selectedHotspot.properties.why.map((reason, index) => (
+                  <li key={index}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* BACKEND LAYER INFORMATION */}
 
