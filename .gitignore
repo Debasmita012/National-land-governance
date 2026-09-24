@@ -6,3 +6,5 @@ backend/.env
 .vscode/
 data/processed/
 *.log
+.venv/
+
