@@ -1,509 +1,532 @@
-# 🌍 National Land Governance Platform
+# National Digital Platform for Research, Policy Innovation & Evidence-Based Land Governance
 
-AI-Powered Land Intelligence • GIS Risk Detection • Evidence-Based Policy Support
+AI + GIS + Research Intelligence + Policy Simulation + Evidence Traceability
 
-The National Land Governance Platform is an AI-powered decision-support system that transforms land data into explainable risk insights, GIS hotspots, research evidence, and policy simulations.
+An AI-powered Land Intelligence and Governance platform that combines land datasets, research evidence, GIS, satellite-derived features, risk analysis, and policy simulation into a unified decision-support system.
 
-The platform connects land records, datasets, research papers, GIS information, and policy analysis into one workflow:
+The platform follows the workflow:
 
-DATA → ANALYSIS → RISK → MAP → EVIDENCE → POLICY → SIMULATION
+DATA → EVIDENCE → INSIGHT → SIMULATION → POLICY → OUTCOME
 
----
 
-## 🎯 What the Platform Does
+## 🚀 What the Platform Does
 
-A user can upload land-related data containing information such as:
+• AI-powered land-risk analysis
+• Explainable parcel-level risk scoring
+• GIS-based land-risk hotspot visualization
+• Historical and current land-use change detection
+• Land-dispute early warning
+• Anomaly detection using Isolation Forest
+• Research document search using RAG
+• Evidence Card generation
+• Evidence provenance and traceability
+• Policy exploration
+• Policy impact simulation
+• SDG impact scoring
+• Sentinel-2 compatible satellite feature analysis
+• Authentication and role-based access control
 
-- Parcel ID
-- Land use
-- Dispute count
-- Population
-- Area
-- Latitude
-- Longitude
 
-The platform then:
+## 🧠 Our Land-Risk Model
 
-1. Understands and profiles the uploaded data
-2. Detects important fields and data-quality issues
-3. Compares current and historical land use
-4. Detects land-use changes
-5. Analyzes dispute and population pressure
-6. Detects unusual patterns
-7. Calculates an explainable parcel-level risk score
-8. Displays risky parcels as GIS hotspots
-9. Explains why a parcel received its risk level
-10. Connects findings with research evidence
-11. Allows policy scenarios to be explored through the Policy Sandbox
+The core intelligence of the platform is an Explainable Integrated Land-Risk Model.
 
-In simple terms:
+The model does not simply produce a risk number. It breaks the score into interpretable components so users can understand why a parcel receives a particular risk level.
 
-UPLOAD → ANALYZE → DETECT RISK → EXPLAIN → MAP → FIND EVIDENCE → SIMULATE POLICY
+### Risk Components
 
----
+Dispute Pressure       → 35%
+Population Pressure    → 20%
+Land-Use Pressure      → 20%
+Anomaly Pressure       → 25%
 
-## 🧠 How It Works
+### 1. Dispute Pressure
 
-                         ┌──────────────────────┐
-                         │     LAND DATA        │
-                         │ CSV / Excel / GIS    │
-                         │ Research / Policies  │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │    DATA PROFILING    │
-                         │                      │
-                         │ Field Detection      │
-                         │ Validation            │
-                         │ Data Quality         │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                    ┌──────────────────────────────┐
-                    │   LAND INTELLIGENCE ENGINE  │
-                    │                              │
-                    │ Land-Use Change             │
-                    │ Dispute Pressure            │
-                    │ Population Pressure         │
-                    │ Anomaly Detection            │
-                    └──────────────┬───────────────┘
-                                   │
-                                   ▼
-                         ┌──────────────────────┐
-                         │  EXPLAINABLE RISK    │
-                         │                      │
-                         │ Risk Score           │
-                         │ Risk Level           │
-                         │ Risk Factors         │
-                         │ Explanation           │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │     GIS HOTSPOTS     │
-                         │                      │
-                         │ GeoJSON + Map        │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                    ┌──────────────────────────────┐
-                    │      EVIDENCE ENGINE        │
-                    │                              │
-                    │ Research + Datasets +       │
-                    │ Sources + Citations         │
-                    └──────────────┬───────────────┘
-                                   │
-                                   ▼
-                         ┌──────────────────────┐
-                         │    POLICY SANDBOX    │
-                         │                      │
-                         │ What-if Scenarios    │
-                         │ Impact Simulation     │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │   DECISION SUPPORT   │
-                         └──────────────────────┘
+Measures the relative level of observed disputes for a parcel compared with other records in the uploaded dataset.
 
----
+### 2. Population Pressure
 
-## 🔥 Core Features
+Measures population pressure relative to the uploaded dataset.
 
-### 1. AI Land Intelligence
+### 3. Land-Use Pressure
 
-The platform automatically profiles uploaded land datasets.
-
-It can identify fields such as:
-
-parcel_id
-land_use
-dispute_count
-population
-latitude
-longitude
-area
-
-It also provides:
-
-- Number of records
-- Detected columns
-- Data types
-- Missing-value information
-- Duplicate information
-- Geographic availability
-- Basic land statistics
-
----
-
-### 2. Historical Land-Use Change Detection
-
-The platform can compare historical and current land-use datasets.
-
-For example:
-
-P002
-Agricultural → Residential
-
-P004
-Agricultural → Industrial
-
-P007
-Forest → Residential
-
-The system identifies:
-
-- Changed parcels
-- Unchanged parcels
-- Conversion rate
-- Land-use transitions
-- Historical distribution
-- Current distribution
-
-This allows the platform to identify where land-use patterns are changing.
-
----
-
-### 3. Explainable AI Risk Engine
-
-The platform calculates a composite pilot risk score for each parcel.
-
-The current risk model uses:
-
-Dispute Pressure     → 35%
-Population Pressure  → 20%
-Land-Use Pressure    → 20%
-Anomaly Pressure     → 25%
-
-Risk levels:
-
-0–29     → Low
-30–59    → Moderate
-60–79    → High
-80–100   → Critical
+Different land-use categories are assigned pilot pressure values.
 
 Example:
 
-Parcel: P004
+Forest          → 15
+Agricultural    → 35
+Mixed           → 70
+Residential     → 75
+Urban           → 85
+Commercial      → 90
+Industrial      → 100
 
-Risk Score: 94.77
-Risk Level: Critical
+These values are pilot model values and are not universal land-governance rules.
 
-Land-use transition:
+### 4. Anomaly Pressure
 
+The model uses Isolation Forest to identify unusual combinations of dispute and population values.
+
+### Risk Levels
+
+0–29    → Low
+30–59   → Moderate
+60–79   → High
+80–100  → Critical
+
+The current risk engine is an explainable pilot decision-support model and is not a statistically validated probability of future land conflict.
+
+
+## 🔄 Historical Land-Use Change
+
+The platform compares historical and current land datasets at parcel level.
+
+It identifies:
+
+• Changed parcels
+• Unchanged parcels
+• Conversion rate
+• Previous land use
+• Current land use
+• Land-use transitions
+
+Example transitions:
+
+Agricultural → Residential
 Agricultural → Industrial
+Residential  → Commercial
 
-Contributing indicators:
+Historical land-use change is integrated into the parcel-level risk analysis.
 
-- High observed dispute pressure
-- High population pressure
-- High development pressure
-- Unusual data pattern
 
-The important part is that the platform does not only provide a risk score.
+## 🤖 Machine Learning Integration
 
-It also explains the factors contributing to that score.
+The architecture supports an optional supervised Random Forest conflict-risk model.
 
-The current score is a pilot composite risk index for decision support. It is not a statistically validated probability of a future land dispute.
+The model can be loaded from:
 
----
+ai/training/models/
 
-### 4. GIS Risk Hotspots
+When a properly trained and validated model is available, the architecture supports:
 
-After calculating parcel-level risk, the platform converts the results into GeoJSON and displays them on an interactive GIS map.
+70% Composite Risk
++
+30% ML Probability Score
 
-Each hotspot contains:
+The supervised model is not currently the primary operational model because sufficient real, properly labelled conflict observations are required before responsible supervised training and validation.
 
-- Parcel ID
-- Risk score
-- Risk level
-- Current land use
-- Previous land use
-- Land-use transition
-- Risk components
-- Anomaly information
-- Explanation
-- Latitude
-- Longitude
+Therefore, the current operational intelligence pipeline is:
 
-Risk levels are displayed as:
-
-🔴 Critical
-🟠 High
-🟡 Moderate
-🟢 Low
-
-The workflow is:
-
-LAND DATA
+Dispute Data
++
+Population Data
++
+Land-Use Data
++
+Isolation Forest Anomaly Detection
++
+Historical Land-Use Change
 ↓
-AI RISK ANALYSIS
+Integrated Explainable Land-Risk Score
 ↓
-PARCEL RISK RECORDS
+Low / Moderate / High / Critical
+
+The system automatically continues using the composite risk model when a supervised ML model is unavailable.
+
+No fabricated conflict labels are used for supervised model training.
+
+
+## 🚨 Anomaly Detection
+
+The platform uses Isolation Forest to identify unusual observations based on available dispute and population information.
+
+Example:
+
+Normal:
+100 disputes
+1200 population
+
+Potential anomaly:
+250 disputes
+2700 population
+
+Detected anomalies become an additional component of the explainable risk analysis.
+
+
+## 🗺️ GIS Land-Risk Hotspots
+
+The GIS Explorer converts parcel-level risk results into GeoJSON and displays them on an interactive Leaflet map.
+
+Each hotspot can contain:
+
+• Parcel ID
+• Risk Score
+• Risk Level
+• Land Use
+• Previous Land Use
+• Current Land Use
+• Land-Use Change
+• Risk Components
+• Anomaly Status
+• Latitude
+• Longitude
+
+Users can select individual parcels and inspect the underlying risk information and explanation.
+
+
+## 📚 Research Intelligence & RAG
+
+Research documents are processed through the following pipeline:
+
+PDF
 ↓
-GEOJSON
+Text Extraction
 ↓
-GIS RISK HOTSPOTS
-
-This connects the numerical analysis directly to the physical location of the parcel.
-
----
-
-### 5. Research Repository
-
-The platform provides a centralized repository for land and policy-related research.
-
-It can work with:
-
-- Research papers
-- Government reports
-- Policy documents
-- Land studies
-- Dataset metadata
-
-Documents can be processed and indexed for semantic retrieval.
-
----
-
-### 6. AI Research and RAG
-
-Research documents follow this pipeline:
-
-DOCUMENT
+Text Cleaning
 ↓
-TEXT EXTRACTION
+Chunking
 ↓
-TEXT CLEANING
+Embeddings
 ↓
-CHUNKING
+ChromaDB
 ↓
-EMBEDDINGS
+Semantic Retrieval
 ↓
-VECTOR DATABASE
-↓
-SEMANTIC SEARCH
-↓
-RELEVANT EVIDENCE
+Evidence
 
 The platform uses:
 
-- Sentence Transformers
-- ChromaDB
-- Vector embeddings
-- Semantic retrieval
-- Retrieval-Augmented Generation concepts
-- Citation-aware evidence retrieval
+• Sentence Transformers
+• ChromaDB
+• Retrieval-Augmented Generation
 
-This allows the system to find relevant research based on meaning rather than only exact keywords.
+Retrieved evidence can include:
 
----
+• Document ID
+• Document Title
+• Chunk Index
+• Similarity Distance
+• Evidence Text
 
-### 7. Evidence-to-Policy Engine
+This keeps research-based insights connected to their underlying evidence.
 
-The Evidence Engine connects analysis with supporting sources.
+
+## 🧾 Evidence Engine
+
+The Evidence Engine converts supporting research and datasets into structured Evidence Cards.
 
 An Evidence Card can contain:
 
-- Recommendation
-- Supporting datasets
-- Research papers
-- Affected geography
-- Positive impacts
-- Negative impacts
-- Confidence information
-- Risks and limitations
-- Alternatives
-- Citations
+• Recommendation
+• Supporting Datasets
+• Research Papers
+• Affected Geography
+• Positive Impacts
+• Negative Impacts
+• Confidence
+• Risks and Limitations
+• Alternatives
+• Citations
 
-The evidence flow is:
+The system validates that supporting evidence exists before generating an Evidence Card.
 
-DATASET
+
+## 🔗 Evidence Provenance
+
+The platform maintains traceability between evidence and its sources.
+
+Evidence Card
 ↓
-RESEARCH EVIDENCE
+Dataset / Document
 ↓
-AI ANALYSIS
+Source
 ↓
-RECOMMENDATION
+Provenance Record
 ↓
-EVIDENCE CARD
-↓
-POLICY OPTION
+Verification
 
-This makes the reasoning behind recommendations easier to trace.
+This makes it possible to verify where an insight originated.
 
----
 
-### 8. Evidence Provenance
+## ⚠️ Land-Dispute Early Warning
 
-The platform tracks relationships between evidence and its sources.
+The Dispute Warning module combines indicators such as:
 
-The provenance flow is:
+• Current disputes
+• Previous disputes
+• Land-use change
+• Population growth
+• Anomaly detection
 
-DATASET
-↓
-RESEARCH
-↓
-ANALYSIS
-↓
-EVIDENCE CARD
-↓
-POLICY RECOMMENDATION
+It produces:
 
-This helps answer:
+• Risk Score
+• Risk Level
+• Warning
+• Supporting Indicators
+• Anomaly Status
 
-"Where did this recommendation come from?"
+This is a decision-support early-warning mechanism rather than a guaranteed prediction of future conflict.
 
----
 
-### 9. Policy Sandbox
+## 🛰️ Satellite Intelligence
 
-The Policy Sandbox allows users to explore "what-if" scenarios.
+The platform includes Sentinel-2 compatible remote-sensing feature extraction.
 
-Users can change parameters such as:
+### NDVI
 
-- Conversion tax
-- Green buffer
-- Agricultural subsidy
-- Tribunal resolution time
+NDVI = (NIR - Red) / (NIR + Red)
 
-The system then produces pilot scenario indicators such as:
+Used for vegetation and land-cover analysis.
 
-- Sprawl reduction
-- Displacement risk
-- Municipal revenue
-- Carbon area preserved
-- Projected dispute trends
+### NDWI
 
-The current simulator is rule-based and intended for demonstration and decision-support purposes.
+NDWI = (Green - NIR) / (Green + NIR)
 
----
+Used for water-related surface analysis.
 
-### 10. Analytics and Early Warning
+### NDBI
 
-The platform includes analytical tools for identifying patterns in land-related data.
+NDBI = (SWIR - NIR) / (SWIR + NIR)
 
-Trend Analysis can identify:
+Used as a built-up and urbanization indicator.
 
-- Increasing trends
-- Decreasing trends
-- Stable trends
-- Average
-- Minimum
-- Maximum
-- Percentage change
-- Pattern strength
+The satellite module also supports temporal comparison between previous and current observations.
 
-Anomaly Detection uses Isolation Forest to identify unusual observations.
 
-The platform also contains a land-dispute early-warning component that combines indicators such as:
+## 🧪 Policy Sandbox
 
-- Current disputes
-- Previous disputes
-- Land-use change
-- Population growth
-- Anomalies
+The Policy Sandbox provides a rule-based environment for testing policy scenarios.
 
-The result is an early-warning indicator for further investigation.
+Example inputs include:
 
----
+• Conversion Tax
+• Green Buffer
+• Subsidy
+• Tribunal Resolution Time
 
-# 🏗️ System Architecture
+The simulation produces indicators such as:
 
-                         ┌─────────────────────────────┐
-                         │         DATA SOURCES        │
-                         │                             │
-                         │ Land Data                   │
-                         │ Research Papers             │
-                         │ Policy Documents            │
-                         │ GIS / Geospatial Data       │
-                         └──────────────┬──────────────┘
-                                        │
-                                        ▼
-                         ┌─────────────────────────────┐
-                         │         INGESTION           │
-                         │                             │
-                         │ Upload                      │
-                         │ Profiling                   │
-                         │ Validation                  │
-                         │ Field Detection             │
-                         └──────────────┬──────────────┘
-                                        │
-                                        ▼
-              ┌────────────────────────────────────────────────┐
-              │                    STORAGE                     │
-              │                                                │
-              │ PostgreSQL + PostGIS + ChromaDB                │
-              └──────────────────────┬─────────────────────────┘
-                                     │
-                  ┌──────────────────┼──────────────────┐
-                  │                  │                  │
-                  ▼                  ▼                  ▼
-        ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-        │   AI / RAG      │ │  GIS ENGINE     │ │   ANALYTICS     │
-        │                 │ │                 │ │                 │
-        │ Embeddings      │ │ GeoJSON         │ │ Trend Analysis  │
-        │ Semantic Search │ │ Risk Hotspots   │ │ Anomalies       │
-        │ Evidence        │ │ Mapping         │ │ Early Warning   │
-        └────────┬────────┘ └────────┬────────┘ └────────┬────────┘
-                 │                   │                   │
-                 └───────────────────┼───────────────────┘
-                                     │
-                                     ▼
-                         ┌─────────────────────────────┐
-                         │    EVIDENCE-TO-POLICY       │
-                         │           ENGINE            │
-                         └──────────────┬──────────────┘
-                                        │
-                                        ▼
-                         ┌─────────────────────────────┐
-                         │        EVIDENCE CARD        │
-                         │                             │
-                         │ Sources                     │
-                         │ Recommendation              │
-                         │ Risks                       │
-                         │ Alternatives                │
-                         │ Citations                   │
-                         └──────────────┬──────────────┘
-                                        │
-                                        ▼
-                         ┌─────────────────────────────┐
-                         │       POLICY SANDBOX        │
-                         │                             │
-                         │ What-if Scenarios           │
-                         │ Impact Simulation           │
-                         └──────────────┬──────────────┘
-                                        │
-                                        ▼
-                         ┌─────────────────────────────┐
-                         │       DECISION SUPPORT      │
-                         └─────────────────────────────┘
+• Sprawl Reduction
+• Displacement Risk
+• Municipal Revenue
+• Carbon Area Preserved
 
----
+The current sandbox is a rule-based pilot simulation and is not a statistically validated forecasting model.
 
-# 🛠️ Technology Stack
 
-Frontend:
-React • JavaScript • Leaflet • React Leaflet • CSS
+## 🏛️ Policy Explorer
 
-Backend:
-Python • FastAPI • SQLAlchemy • Uvicorn • Pydantic
+The Policy Explorer provides structured policy information including:
 
-AI / ML:
-Pandas • NumPy • Scikit-learn • Isolation Forest • Sentence Transformers • RAG
+• Policy Title
+• Policy Code
+• Year
+• Policy Type
+• Geography
+• Status
+• Lead Ministry
+• Overview
+• Key Clauses
+• Impact
 
-Database:
-PostgreSQL • PostGIS
+Policy information is retrieved from the backend database.
 
-Vector Database:
-ChromaDB
 
-Infrastructure:
-Docker • Docker Compose
+## 🌱 SDG Scorecard
 
----
+The SDG Scorecard evaluates policy impacts across:
 
-# 📁 Project Structure
+• Housing
+• Economic Impact
+• Food Security
+• Climate
+• Infrastructure
+
+It produces:
+
+• Overall Score
+• Overall Level
+• Strengths
+• Weaknesses
+
+
+## 📈 Analytics
+
+The Analytics module provides:
+
+### Trend Analysis
+
+Identifies whether a time series is:
+
+• Increasing
+• Decreasing
+• Stable
+
+and calculates trend strength and change.
+
+### Anomaly Detection
+
+Uses Isolation Forest to identify unusual observations.
+
+### Summary Analysis
+
+Provides statistical summaries of uploaded datasets.
+
+
+## 🏗️ System Architecture & Data Flow
+
+The platform works as an end-to-end pipeline where raw data is transformed into evidence, intelligence, risk insights, and policy decisions.
+
+```text
+                    ┌─────────────────────────┐
+                    │     USER / DATA SOURCES  │
+                    └────────────┬────────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                  │
+              ▼                  ▼                  ▼
+       Land Datasets      Research Documents   GIS / Satellite
+              │                  │                  │
+              └──────────────────┼──────────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │    1. DATA INGESTION    │
+                    │                         │
+                    │ Upload / Collect Data   │
+                    │ CSV • Excel • GeoJSON   │
+                    │ PDF • Satellite Data    │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │   2. DATA PROCESSING    │
+                    │                         │
+                    │ Validation              │
+                    │ Cleaning                │
+                    │ Field Detection         │
+                    │ PDF Text Extraction     │
+                    │ Data Profiling          │
+                    │ Spatial Processing      │
+                    └────────────┬────────────┘
+                                 │
+                  ┌──────────────┴──────────────┐
+                  │                             │
+                  ▼                             ▼
+       ┌────────────────────┐       ┌────────────────────┐
+       │ STRUCTURED DATA    │       │ RESEARCH KNOWLEDGE │
+       │                    │       │                    │
+       │ PostgreSQL         │       │ Embeddings         │
+       │ + PostGIS          │       │ + ChromaDB         │
+       └─────────┬──────────┘       └─────────┬──────────┘
+                 │                            │
+                 └──────────────┬─────────────┘
+                                │
+                                ▼
+                    ┌─────────────────────────┐
+                    │ 3. AI & INTELLIGENCE    │
+                    │                         │
+                    │ • Land-Risk Analysis    │
+                    │ • Isolation Forest      │
+                    │ • Land-Use Change       │
+                    │ • RAG / Semantic Search │
+                    │ • Satellite Features    │
+                    │ • Optional ML Model     │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │ 4. EVIDENCE & RISK      │
+                    │                         │
+                    │ • Risk Score            │
+                    │ • Risk Components       │
+                    │ • Evidence Cards        │
+                    │ • Confidence            │
+                    │ • Citations             │
+                    │ • Provenance             │
+                    └────────────┬────────────┘
+                                 │
+                    ┌────────────┴────────────┐
+                    │                         │
+                    ▼                         ▼
+          ┌──────────────────┐      ┌──────────────────┐
+          │ 5. GIS           │      │ 6. ANALYTICS     │
+          │ INTELLIGENCE     │      │                  │
+          │                  │      │ • Trends         │
+          │ • Risk Hotspots  │      │ • Anomalies      │
+          │ • GeoJSON        │      │ • Statistics     │
+          │ • Spatial View   │      │ • Summaries      │
+          └────────┬─────────┘      └────────┬─────────┘
+                   │                         │
+                   └────────────┬────────────┘
+                                │
+                                ▼
+                    ┌─────────────────────────┐
+                    │ 7. POLICY INTELLIGENCE │
+                    │                         │
+                    │ • Policy Explorer      │
+                    │ • Evidence-Based       │
+                    │   Insights             │
+                    │ • SDG Scorecard        │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │ 8. POLICY SANDBOX       │
+                    │                         │
+                    │ User changes parameters │
+                    │            ↓            │
+                    │ Scenario Simulation     │
+                    │            ↓            │
+                    │ Impact Projection       │
+                    │                         │
+                    │ • Sprawl Reduction      │
+                    │ • Displacement Risk     │
+                    │ • Revenue Impact        │
+                    │ • Carbon Preserved      │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │ 9. DECISION SUPPORT     │
+                    │                         │
+                    │ Risk + Evidence + GIS   │
+                    │ + Policy + Impact       │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │         OUTCOME         │
+                    │                         │
+                    │ Evidence-Based          │
+                    │ Land Governance         │
+                    └────────────┬────────────┘
+                                 │
+                                 ▼
+                    ┌─────────────────────────┐
+                    │       FEEDBACK          │
+                    │                         │
+                    │ New Data • Monitoring   │
+                    │ Updated Evidence        │
+                    │ Model Improvement       │
+                    └────────────┬────────────┘
+                                 │
+                                 └───────────↺
+```
+
+### Simple Flow
+
+**Data → Processing → Storage → AI Analysis → Evidence & Risk → GIS & Analytics → Policy Intelligence → Simulation → Decision Support → Outcome → Feedback**
+
+The important part is that the architecture is not just:
+
+**Frontend → Backend → Database**
+
+Instead, the system creates a complete pipeline from **raw land data to explainable risk, evidence, visualization, policy simulation, and decision support**.
+
+## 📁 Project Structure
 
 national-land-governance/
 │
@@ -512,7 +535,12 @@ national-land-governance/
 │   ├── embeddings/
 │   ├── ingestion/
 │   ├── models/
-│   └── rag/
+│   ├── rag/
+│   └── training/
+│       ├── data/
+│       ├── processed/
+│       ├── scripts/
+│       └── models/
 │
 ├── backend/
 │   ├── app/
@@ -520,12 +548,20 @@ national-land-governance/
 │   │   ├── routes/
 │   │   ├── schemas/
 │   │   └── services/
-│   └── database.py
+│   ├── database.py
+│   └── .env
+│
+├── data/
+│   ├── documents/
+│   ├── csv/
+│   ├── geojson/
+│   ├── raster/
+│   ├── processed/
+│   └── vector_db/
 │
 ├── frontend/
 ├── gis/
 ├── sandbox/
-├── data/
 ├── scripts/
 ├── security/
 │
@@ -533,134 +569,150 @@ national-land-governance/
 ├── requirements.txt
 └── README.md
 
----
 
-# 🚀 Running the Project
+## 🔐 Authentication & RBAC
 
-## 1. Clone the repository
+The platform includes authentication and role-based access control.
 
-git clone https://github.com/Debasmita012/national-land-governance.git
+Supported roles include:
 
+• ADMIN
+• RESEARCH
+• POLICY
+
+Protected endpoints verify:
+
+Authentication
++
+User Identity
++
+User Role
+
+
+## 🔌 Main API Modules
+
+/datasets/
+/documents/
+/evidence-cards/
+/provenance/
+/policies/
+/gis-layers/
+/analytics/
+/dispute-warning/
+/sdg-scorecard/
+/carbon-impact/
+/sandbox/
+/land-analysis/
+/policy-analysis/
+/auth-test/
+
+
+## ⚙️ Local Setup
+
+### 1. Clone the Repository
+
+git clone <your-github-repository-url>
 cd national-land-governance
 
-## 2. Start PostgreSQL/PostGIS
+### 2. Create Python Virtual Environment
 
-Make sure Docker Desktop is running.
+python -m venv venv
 
-docker compose up -d postgres
+Windows:
 
-## 3. Configure the backend
+.\venv\Scripts\Activate.ps1
+
+### 3. Install Dependencies
+
+pip install -r requirements.txt
+
+### 4. Start PostgreSQL/PostGIS
+
+docker compose up -d
+
+Current database configuration:
+
+Host: localhost
+Port: 5433
+Database: land_governance
+Username: land_admin
+
+### 5. Configure Environment Variables
 
 Create:
 
 backend/.env
 
-Add:
+Example:
 
 DATABASE_URL=postgresql://land_admin:land_password@localhost:5433/land_governance
 OPENAI_API_KEY=your_api_key_here
 
-Do not commit .env files or API keys.
+Never commit .env files to GitHub.
 
-## 4. Start the backend
+### 6. Start Backend
 
 cd backend
+uvicorn app.main:app --reload --port 8000
 
-python -m uvicorn app.main:app --reload --port 8000
-
-API documentation:
-
-http://127.0.0.1:8000/docs
-
-## 5. Start the frontend
+### 7. Start Frontend
 
 Open another terminal:
 
 cd frontend
-
 npm install
-
 npm run dev
 
-Open:
 
-http://localhost:5173
+## ⚠️ Model Status
 
----
+The currently operational land-risk system is an explainable pilot model.
 
-# 📌 Current Status
+The primary operational pipeline is:
 
-Implemented:
-
-✓ PostgreSQL + PostGIS
-✓ FastAPI Backend
-✓ React Frontend
-✓ Automatic Data Profiling
-✓ AI Land Intelligence
-✓ Historical Land-Use Change Detection
-✓ Explainable Land Risk Engine
-✓ GIS Risk Hotspots
-✓ Research Repository
-✓ Semantic Retrieval / RAG
-✓ Evidence-to-Policy Engine
-✓ Evidence Provenance
-✓ Policy Explorer
-✓ Policy Sandbox
-✓ Trend Analysis
-✓ Anomaly Detection
-✓ Land-Dispute Early Warning
-✓ SDG Scorecard
-✓ Interactive Dashboard
-
-Roadmap:
-
-→ Advanced satellite and remote-sensing integration
-→ Production authentication and RBAC
-→ Collaborative workspaces
-→ Citizen ground-truth verification
-→ Multilingual RAG
-→ Advanced policy simulation
-→ Carbon impact estimation
-→ External API marketplace
-
----
-
-# 🌍 Core Innovation
-
-The platform is designed around one continuous decision-support loop:
-
-DATA
+Dispute Pressure
++
+Population Pressure
++
+Land-Use Pressure
++
+Isolation Forest Anomaly Detection
++
+Historical Land-Use Change
 ↓
-EVIDENCE
+Integrated Explainable Land-Risk Score
 ↓
-INSIGHT
-↓
-SIMULATION
-↓
-POLICY
-↓
-OUTCOME
-↓
-FEEDBACK
+Risk Level
 
-The goal is not simply to store land data.
+The supervised Random Forest component is an optional extension and is only used when a properly trained and validated model is available.
 
-The goal is to answer:
+The project does not fabricate conflict labels and does not claim that the current pilot model provides a statistically validated probability of future land conflict.
 
-WHERE IS THE PROBLEM?
-        ↓
-WHAT CHANGED?
-        ↓
-WHY IS IT HAPPENING?
-        ↓
-WHERE IS THE RISK?
-        ↓
-WHY IS THE AREA FLAGGED?
-        ↓
-WHAT EVIDENCE SUPPORTS THE FINDING?
-        ↓
-WHAT POLICY OPTIONS CAN BE EXPLORED?
-        ↓
-WHAT COULD HAPPEN?
 
-This creates a unified platform for turning complex land data into explainable geospatial intelligence and evidence-based policy support.
+## 💡 Core Innovation
+
+The platform goes beyond being a land-data repository.
+
+It connects:
+
+Land Data
++
+Research Evidence
++
+AI / ML
++
+GIS
++
+Satellite Intelligence
++
+Policy Simulation
++
+Evidence Provenance
+↓
+Evidence-Based Land Governance
+
+The core idea is to connect data to evidence, evidence to insight, insight to policy, and policy back to measurable outcomes.
+
+## 🎯 Vision
+
+To provide an integrated Land Intelligence and Evidence-to-Policy platform where land risks can be detected, explained, visualized, supported by evidence, and evaluated against policy scenarios.
