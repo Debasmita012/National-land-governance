@@ -375,83 +375,134 @@ Uses Isolation Forest to identify unusual observations.
 Provides statistical summaries of uploaded datasets.
 
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture & Data Flow
 
-Frontend
-│
-├── React
-├── JavaScript
-├── Leaflet
-└── React Leaflet
-│
-▼
-FastAPI Backend
-│
-├── Land Intelligence
-├── AI / ML Engine
-├── Evidence Engine
-├── Research / RAG
-├── Analytics
-├── Policy Engine
-├── GIS Services
-└── Authentication / RBAC
-│
-├───────────────┬───────────────┐
-▼               ▼               ▼
-PostgreSQL    ChromaDB        GIS / GeoJSON
-+ PostGIS     Vector DB       Spatial Data
-│
-▼
-Evidence + Risk + Policy + GIS Intelligence
+The platform works as an end-to-end pipeline where raw data is transformed into evidence, intelligence, risk insights, and policy decisions.
 
-
-## 🛠️ Technology Stack
-
-### Frontend
-
-• React
-• JavaScript
-• CSS
-• Leaflet
-• React Leaflet
-
-### Backend
-
-• Python
-• FastAPI
-• SQLAlchemy
-• Uvicorn
-• Pydantic
-
-### AI / Machine Learning
-
-• Pandas
-• NumPy
-• scikit-learn
-• Isolation Forest
-• Random Forest integration
-• Sentence Transformers
-• Retrieval-Augmented Generation
-
-### GIS / Remote Sensing
-
-• GeoJSON
-• GeoPandas
-• Rasterio
-• Leaflet
-• PostgreSQL/PostGIS
-• Sentinel-2 compatible raster processing
-
-### Database
-
-• PostgreSQL
-• PostGIS
-• ChromaDB
-
-### Infrastructure
-
-• Docker
-• Docker Compose
+USER / DATA SOURCES
+        │
+        ▼
+┌──────────────────────────────┐
+│  1. DATA INGESTION           │
+│                              │
+│  • Land datasets             │
+│  • Research documents        │
+│  • GIS / GeoJSON data        │
+│  • Satellite imagery        │
+│  • Policy data               │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│  2. DATA PROCESSING          │
+│                              │
+│  • Validation                │
+│  • Cleaning                  │
+│  • Field detection           │
+│  • PDF text extraction       │
+│  • Data profiling            │
+│  • Spatial processing        │
+└──────────────┬───────────────┘
+               │
+       ┌───────┴────────┐
+       │                │
+       ▼                ▼
+┌──────────────┐  ┌──────────────────┐
+│ STRUCTURED   │  │ RESEARCH         │
+│ DATA         │  │ KNOWLEDGE        │
+│              │  │                  │
+│ PostgreSQL   │  │ Embeddings       │
+│ + PostGIS    │  │ + ChromaDB       │
+└──────┬───────┘  └────────┬─────────┘
+       │                   │
+       └─────────┬─────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│  3. AI & INTELLIGENCE ENGINE     │
+│                                  │
+│  • Land-risk analysis            │
+│  • Isolation Forest anomalies    │
+│  • Land-use change detection     │
+│  • RAG / semantic retrieval      │
+│  • Satellite feature extraction  │
+│  • Optional ML conflict model    │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│  4. EVIDENCE & RISK ENGINE       │
+│                                  │
+│  • Explainable risk score        │
+│  • Risk components               │
+│  • Evidence Cards                │
+│  • Confidence                    │
+│  • Supporting datasets           │
+│  • Research citations            │
+│  • Provenance                    │
+└────────────────┬─────────────────┘
+                 │
+        ┌────────┴─────────┐
+        │                  │
+        ▼                  ▼
+┌────────────────┐  ┌──────────────────┐
+│ 5. GIS          │  │ 6. ANALYTICS     │
+│ INTELLIGENCE    │  │                  │
+│                 │  │ • Trends         │
+│ • Risk hotspots │  │ • Anomalies      │
+│ • GeoJSON       │  │ • Statistics     │
+│ • Spatial view  │  │ • Summaries      │
+└────────┬────────┘  └────────┬─────────┘
+         │                    │
+         └──────────┬─────────┘
+                    │
+                    ▼
+┌──────────────────────────────────┐
+│  7. POLICY INTELLIGENCE          │
+│                                  │
+│  • Policy Explorer               │
+│  • Evidence-based insights       │
+│  • Policy recommendations        │
+│  • SDG Scorecard                 │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│  8. POLICY SANDBOX               │
+│                                  │
+│  User changes policy parameters  │
+│              ↓                   │
+│  Scenario simulation             │
+│              ↓                   │
+│  Impact projection               │
+│                                  │
+│  • Sprawl reduction              │
+│  • Displacement risk             │
+│  • Revenue impact                │
+│  • Carbon area preserved         │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│  9. DECISION SUPPORT             │
+│                                  │
+│  • Risk visualization            │
+│  • Evidence Cards                │
+│  • Policy scenarios              │
+│  • Impact indicators             │
+│  • SDG outcomes                  │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+              OUTCOME
+                 │
+                 ▼
+        New observations /
+        updated datasets /
+        feedback
+                 │
+                 └───────────────↺
+                    FEEDBACK LOOP
 
 
 ## 📁 Project Structure
