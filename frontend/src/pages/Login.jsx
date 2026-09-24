@@ -469,11 +469,9 @@ function Login({ onLogin }) {
             </div>
 
             <h1>
-              National Land
+              LAND
               <br />
-              Governance
-              <br />
-              Platform
+               SIGHT
             </h1>
 
             <p>
