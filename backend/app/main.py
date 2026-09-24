@@ -1,3 +1,5 @@
+from app.routes.auth_test import router as auth_test_router
+from app.routes.auth import router as auth_router
 import sys
 from pathlib import Path
 
@@ -85,8 +87,12 @@ app.include_router(
 )
 app.include_router(sandbox_router)
 app.include_router(land_analysis.router)
-
-
+app.include_router(
+    auth_router
+)
+app.include_router(
+    auth_test_router
+)
 
 
 @app.get("/")

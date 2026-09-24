@@ -1,0 +1,21 @@
+{
+  "project": "National Digital Platform for Research, Policy Innovation & Evidence-Based Land Governance",
+  "purpose": "Training data provenance for the land-conflict risk model",
+  "sources": [
+    {
+      "name": "Land Conflict Watch",
+      "organization": "NutGraph LLP",
+      "url": "https://www.landconflictwatch.org/",
+      "role": "Reference and publicly reported conflict evidence",
+      "access_type": "Public web reports and conflict pages",
+      "license_note": "Underlying downloadable LCW database requires permission/license"
+    },
+    {
+      "name": "Department of Agriculture & Farmers Welfare - Land Use Statistics",
+      "organization": "Government of India",
+      "url": "https://desagri.gov.in/document-report-category/land-use-statistics-at-a-glance/",
+      "role": "Official land-use features",
+      "access_type": "Public government statistics"
+    }
+  ]
+}

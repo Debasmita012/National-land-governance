@@ -1,6 +1,7 @@
 import LandIntelligence from "./pages/LandIntelligence";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Login from "./pages/Login";
 import Sidebar from "./components/Sidebar";
 
 import Dashboard from "./pages/Dashboard";
@@ -17,12 +18,105 @@ import Provenance from "./pages/Provenance";
 
 import "./App.css";
 
+const API_BASE_URL = "http://127.0.0.1:8000";
+
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() =>
+    Boolean(localStorage.getItem("land_governance_token"))
+  );
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    const storedUser = localStorage.getItem("land_governance_user");
+    if (!storedUser) return null;
+
+    try {
+      return JSON.parse(storedUser);
+    } catch {
+      return null;
+    }
+  });
+
+  const [authChecking, setAuthChecking] = useState(true);
+
   const [activePage, setActivePage] = useState("dashboard");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [savedItemsCount, setSavedItemsCount] = useState(3);
+
+  useEffect(() => {
+    const token = localStorage.getItem("land_governance_token");
+    const storedUser = localStorage.getItem("land_governance_user");
+
+    if (!token || !storedUser) {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setAuthChecking(false);
+      return;
+    }
+
+    try {
+      const user = JSON.parse(storedUser);
+
+      if (!user?.username || !user?.role) {
+        throw new Error("Invalid stored user");
+      }
+
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+    } catch {
+      localStorage.removeItem("land_governance_token");
+      localStorage.removeItem("land_governance_user");
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setAuthChecking(false);
+    }
+  }, []);
+
+  const handleLogin = (user, token) => {
+    localStorage.setItem("land_governance_token", token);
+    localStorage.setItem("land_governance_user", JSON.stringify(user));
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+    setActivePage("dashboard");
+    setNotificationsOpen(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("land_governance_token");
+    localStorage.removeItem("land_governance_user");
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    setActivePage("dashboard");
+    setNotificationsOpen(false);
+    setHelpOpen(false);
+  };
+
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case "ADMIN":
+        return "System Administrator";
+      case "RESEARCHER":
+        return "Research & Evidence";
+      case "POLICY_MAKER":
+        return "Policy Maker";
+      default:
+        return "Authenticated User";
+    }
+  };
+
+  const getUserInitials = (username) => {
+    if (!username) return "U";
+
+    const parts = username.trim().split(/\s+/).filter(Boolean);
+
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    return username.substring(0, 2).toUpperCase();
+  };
 
   const notifications = [
     {
@@ -189,8 +283,50 @@ function App() {
     }
   };
 
+  if (authChecking) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(135deg, #07111f, #172554)",
+          color: "#ffffff",
+          fontFamily: "Inter, system-ui, sans-serif",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: "42px",
+              height: "42px",
+              margin: "0 auto 14px",
+              borderRadius: "50%",
+              border: "4px solid rgba(255,255,255,0.22)",
+              borderTopColor: "#38bdf8",
+              animation: "landGovernanceSpin 0.8s linear infinite",
+            }}
+          />
+          <div style={{ fontSize: "14px", fontWeight: 700 }}>
+            Restoring secure session...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <div className="app">
+      <style>{`
+        @keyframes landGovernanceSpin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
 
       {/* =====================================================
           SIDEBAR
@@ -276,6 +412,25 @@ function App() {
                 All 28 States Synced
               </span>
 
+            </div>
+
+            <div
+              title="Current access role"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "7px 10px",
+                borderRadius: "999px",
+                background: "#eff6ff",
+                border: "1px solid #bfdbfe",
+                color: "#1d4ed8",
+                fontSize: "11px",
+                fontWeight: 800,
+                whiteSpace: "nowrap",
+              }}
+            >
+              🔐 {currentUser?.role || "USER"}
             </div>
 
             {/* =================================================
@@ -371,27 +526,50 @@ function App() {
                 ADMIN
             ================================================== */}
 
-            <div className="admin-area">
-
-              <div className="admin-info">
-
+            <div
+              className="admin-area"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <div
+                className="admin-info"
+                style={{ textAlign: "right" }}
+              >
                 <strong>
-                  Dr. R. Sengupta
+                  {currentUser?.username || "User"}
                 </strong>
-
                 <span>
-                  Chief Land Administrator
+                  {getRoleLabel(currentUser?.role)}
                 </span>
-
               </div>
 
               <div
                 className="admin-avatar"
-                title="Chief Land Administrator"
+                title={currentUser?.role || "Authenticated User"}
               >
-                RS
+                {getUserInitials(currentUser?.username)}
               </div>
 
+              <button
+                type="button"
+                onClick={handleLogout}
+                title="Sign out"
+                style={{
+                  border: "1px solid #cbd5e1",
+                  background: "#ffffff",
+                  color: "#334155",
+                  borderRadius: "9px",
+                  padding: "8px 11px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Logout
+              </button>
             </div>
 
           </div>

@@ -1,374 +1,201 @@
 from pathlib import Path
 from typing import Any, Dict, List
 
+import sys
+
+import numpy as np
 import pandas as pd
+
 from sklearn.ensemble import IsolationForest
 
 
+# ============================================================
+# PROJECT PATH
+# ============================================================
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+MODEL_PATH = (
+    PROJECT_ROOT
+    / "ai"
+    / "training"
+    / "models"
+    / "land_conflict_random_forest.joblib"
+)
+
+
+# ============================================================
+# OPTIONAL ML IMPORT
+# ============================================================
+
+try:
+
+    import joblib
+
+except ImportError:
+
+    joblib = None
+
+
+# ============================================================
+# LAND RISK SERVICE
+# ============================================================
+
 class LandRiskService:
-    """
-    Explainable pilot land-risk scoring engine.
 
-    IMPORTANT:
-    This is a composite risk-index model for demonstration and
-    decision-support purposes. The score is NOT a statistically
-    validated probability of a land dispute.
+    """
+    Explainable integrated land-risk engine.
+
+    Current components:
+
+        Composite Risk Index
+        + Anomaly Detection
+        + Optional ML Conflict Prediction
+        + Land-use Change information
+
+    The supervised ML component is optional.
+
+    If a valid trained ML model does not exist,
+    the existing composite-risk engine continues
+    operating normally.
     """
 
-    # Pilot weights.
-    # These can later be calibrated using validated historical data.
+
+    # --------------------------------------------------------
+    # Existing composite-risk weights
+    # --------------------------------------------------------
+
     DISPUTE_WEIGHT = 0.35
+
     POPULATION_WEIGHT = 0.20
+
     LAND_USE_WEIGHT = 0.20
+
     ANOMALY_WEIGHT = 0.25
+
+
+    # --------------------------------------------------------
+    # ML integration weight
+    # --------------------------------------------------------
+
+    ML_WEIGHT = 0.30
+
+    EXISTING_WEIGHT = 0.70
+
+
+    # --------------------------------------------------------
+    # Constructor
+    # --------------------------------------------------------
+
+    def __init__(self):
+
+        self.ml_model = None
+
+        self.ml_available = False
+
+        self._load_ml_model()
+
+
+    # ========================================================
+    # FILE ANALYSIS
+    # ========================================================
 
     def analyze_file(
         self,
         file_path: str,
         detected_fields: Dict[str, str],
     ) -> Dict[str, Any]:
+        """
+        Analyze a CSV/Excel land dataset and return parcel-level
+        risk records in the format expected by the integrated
+        land-risk and GIS hotspot services.
+        """
+
         path = Path(file_path)
 
         if not path.exists():
-            raise ValueError(f"File does not exist: {file_path}")
+            raise ValueError(
+                f"File does not exist: {file_path}"
+            )
 
-        dataframe = self._load_dataframe(path, path.suffix.lower())
-
-        return self._calculate_risk(
-            dataframe=dataframe,
-            detected_fields=detected_fields,
-        )
-
-    # ========================================================
-    # LOAD DATA
-    # ========================================================
-
-    def _load_dataframe(
-        self,
-        path: Path,
-        extension: str,
-    ) -> pd.DataFrame:
+        extension = path.suffix.lower()
 
         if extension == ".csv":
-            return pd.read_csv(path)
+            dataframe = pd.read_csv(path)
 
-        if extension in [".xlsx", ".xls"]:
-            return pd.read_excel(path)
+        elif extension in {".xlsx", ".xls"}:
+            dataframe = pd.read_excel(path)
 
-        raise ValueError(
-            "Land risk analysis currently supports CSV and Excel files."
-        )
-
-    # ========================================================
-    # MAIN RISK CALCULATION
-    # ========================================================
-
-    def _calculate_risk(
-        self,
-        dataframe: pd.DataFrame,
-        detected_fields: Dict[str, str],
-    ) -> Dict[str, Any]:
+        else:
+            raise ValueError(
+                "Land risk analysis currently supports "
+                "CSV and Excel files."
+            )
 
         if dataframe.empty:
             raise ValueError(
                 "The uploaded dataset contains no records."
             )
 
-        df = dataframe.copy()
+        records = []
 
-        parcel_column = detected_fields.get("parcel_id")
-        dispute_column = detected_fields.get("dispute_count")
-        population_column = detected_fields.get("population")
-        land_use_column = detected_fields.get("land_use")
+        for _, row in dataframe.iterrows():
 
-        # ----------------------------------------------------
-        # Initialize component scores
-        # ----------------------------------------------------
+            record: Dict[str, Any] = {}
 
-        df["_dispute_score"] = 0.0
-        df["_population_score"] = 0.0
-        df["_land_use_score"] = 0.0
-        df["_anomaly_score"] = 0.0
-
-        # ----------------------------------------------------
-        # 1. DISPUTE PRESSURE
-        # ----------------------------------------------------
-
-        if (
-            dispute_column
-            and dispute_column in df.columns
-        ):
-            disputes = pd.to_numeric(
-                df[dispute_column],
-                errors="coerce",
-            ).fillna(0)
-
-            max_disputes = float(disputes.max())
-
-            if max_disputes > 0:
-                df["_dispute_score"] = (
-                    disputes / max_disputes
-                ) * 100
-
-        # ----------------------------------------------------
-        # 2. POPULATION PRESSURE
-        # ----------------------------------------------------
-
-        if (
-            population_column
-            and population_column in df.columns
-        ):
-            population = pd.to_numeric(
-                df[population_column],
-                errors="coerce",
-            ).fillna(0)
-
-            min_population = float(population.min())
-            max_population = float(population.max())
-
-            population_range = (
-                max_population - min_population
-            )
-
-            if population_range > 0:
-                df["_population_score"] = (
-                    (
-                        population - min_population
-                    ) / population_range
-                ) * 100
-            else:
-                df["_population_score"] = 0.0
-
-        # ----------------------------------------------------
-        # 3. LAND-USE PRESSURE
-        # ----------------------------------------------------
-
-        if (
-            land_use_column
-            and land_use_column in df.columns
-        ):
-            land_use = (
-                df[land_use_column]
-                .fillna("Unknown")
-                .astype(str)
-                .str.strip()
-                .str.lower()
-            )
-
-            # Pilot classification values.
-            # These are configurable demonstration values,
-            # not universal land-governance rules.
-            land_use_scores = {
-                "agricultural": 35,
-                "forest": 15,
-                "residential": 75,
-                "industrial": 100,
-                "commercial": 90,
-                "mixed": 70,
-                "urban": 85,
-                "institutional": 70,
-                "infrastructure": 80,
-                "unknown": 30,
-            }
-
-            df["_land_use_score"] = land_use.map(
-                lambda value: land_use_scores.get(
-                    value,
-                    50,
-                )
-            )
-
-        # ----------------------------------------------------
-        # 4. ANOMALY DETECTION
-        # ----------------------------------------------------
-
-        numeric_features = []
-
-        for field in [
-            dispute_column,
-            population_column,
-        ]:
-            if (
-                field
-                and field in df.columns
-            ):
-                numeric_features.append(field)
-
-        df["_is_anomaly"] = False
-
-        if numeric_features:
-            feature_dataframe = (
-                df[numeric_features]
-                .apply(
-                    pd.to_numeric,
-                    errors="coerce",
-                )
-                .fillna(0)
-            )
-
-            # Isolation Forest needs a reasonable number of
-            # observations for useful anomaly detection.
-            if len(feature_dataframe) >= 5:
-                contamination = min(
-                    0.10,
-                    max(
-                        1 / len(feature_dataframe),
-                        0.01,
-                    ),
-                )
-
-                model = IsolationForest(
-                    contamination=contamination,
-                    random_state=42,
-                )
-
-                predictions = model.fit_predict(
-                    feature_dataframe
-                )
-
-                anomaly_scores = model.decision_function(
-                    feature_dataframe
-                )
-
-                # Convert Isolation Forest's decision values
-                # into a 0-100 anomaly-pressure score.
-                min_score = float(anomaly_scores.min())
-                max_score = float(anomaly_scores.max())
-                score_range = max_score - min_score
-
-                if score_range > 0:
-                    normalized = (
-                        (
-                            max_score - anomaly_scores
-                        ) / score_range
-                    ) * 100
-                else:
-                    normalized = pd.Series(
-                        0.0,
-                        index=df.index,
-                    )
-
-                df["_anomaly_score"] = normalized
-                df["_is_anomaly"] = (
-                    predictions == -1
-                )
-
-        # ----------------------------------------------------
-        # 5. COMPOSITE RISK SCORE
-        # ----------------------------------------------------
-
-        df["_risk_score"] = (
-            df["_dispute_score"]
-            * self.DISPUTE_WEIGHT
-            + df["_population_score"]
-            * self.POPULATION_WEIGHT
-            + df["_land_use_score"]
-            * self.LAND_USE_WEIGHT
-            + df["_anomaly_score"]
-            * self.ANOMALY_WEIGHT
-        )
-
-        df["_risk_score"] = (
-            df["_risk_score"]
-            .clip(0, 100)
-            .round(2)
-        )
-
-        # ----------------------------------------------------
-        # 6. RISK LEVEL
-        # ----------------------------------------------------
-
-        df["_risk_level"] = df["_risk_score"].apply(
-            self._risk_level
-        )
-
-        # ----------------------------------------------------
-        # 7. BUILD EXPLAINABLE PARCEL RECORDS
-        # ----------------------------------------------------
-
-        risk_records: List[Dict[str, Any]] = []
-
-        latitude_column = detected_fields.get("latitude")
-        longitude_column = detected_fields.get("longitude")
-
-        for index, row in df.iterrows():
-
-            explanation = self._build_explanation(row)
-
-            if (
-                parcel_column
-                and parcel_column in df.columns
-            ):
-                parcel_id = str(row[parcel_column])
-            else:
-                parcel_id = f"Record-{index + 1}"
-
-            record: Dict[str, Any] = {
-                "parcel_id": parcel_id,
-                "risk_score": float(
-                    row["_risk_score"]
-                ),
-                "risk_level": row["_risk_level"],
-                "components": {
-                    "dispute_pressure": round(
-                        float(row["_dispute_score"]),
-                        2,
-                    ),
-                    "population_pressure": round(
-                        float(row["_population_score"]),
-                        2,
-                    ),
-                    "land_use_pressure": round(
-                        float(row["_land_use_score"]),
-                        2,
-                    ),
-                    "anomaly_pressure": round(
-                        float(row["_anomaly_score"]),
-                        2,
-                    ),
-                },
-                "anomaly_detected": bool(
-                    row["_is_anomaly"]
-                ),
-                "why": explanation,
-            }
-
-            # Include coordinates when available.
-            if (
-                latitude_column
-                and longitude_column
-                and latitude_column in df.columns
-                and longitude_column in df.columns
-            ):
-                latitude = pd.to_numeric(
-                    row[latitude_column],
-                    errors="coerce",
-                )
-                longitude = pd.to_numeric(
-                    row[longitude_column],
-                    errors="coerce",
+            # Map detected source columns into the canonical
+            # names used by the risk engine.
+            for canonical_name in [
+                "parcel_id",
+                "survey_number",
+                "land_use",
+                "dispute_count",
+                "population",
+                "population_growth",
+                "latitude",
+                "longitude",
+                "area",
+                "flood_risk",
+                "forest_cover",
+            ]:
+                source_column = detected_fields.get(
+                    canonical_name
                 )
 
                 if (
-                    pd.notna(latitude)
-                    and pd.notna(longitude)
+                    source_column
+                    and source_column in dataframe.columns
                 ):
-                    record["location"] = {
-                        "latitude": float(latitude),
-                        "longitude": float(longitude),
-                    }
+                    value = row[source_column]
 
-            risk_records.append(record)
+                    if pd.isna(value):
+                        value = None
 
-        # Highest-risk parcels first.
-        risk_records.sort(
-            key=lambda item: item["risk_score"],
-            reverse=True,
+                    record[canonical_name] = value
+
+            # Keep additional numeric columns available for a
+            # future trained ML model if its feature names match.
+            for column in dataframe.columns:
+
+                if column in record:
+                    continue
+
+                value = row[column]
+
+                if pd.isna(value):
+                    continue
+
+                if isinstance(
+                    value,
+                    (int, float, np.integer, np.floating),
+                ):
+                    record[column] = float(value)
+
+            records.append(record)
+
+        parcel_risks = self.calculate_risks(
+            records
         )
-
-        # ----------------------------------------------------
-        # 8. SUMMARY
-        # ----------------------------------------------------
 
         risk_distribution = {
             "low": 0,
@@ -377,156 +204,893 @@ class LandRiskService:
             "critical": 0,
         }
 
-        for record in risk_records:
-            level = record["risk_level"].lower()
+        anomaly_count = 0
+
+        for risk in parcel_risks:
+
+            level = str(
+                risk.get(
+                    "risk_level",
+                    "Low",
+                )
+            ).lower()
 
             if level in risk_distribution:
                 risk_distribution[level] += 1
 
-        high_risk_count = (
-            risk_distribution["high"]
-            + risk_distribution["critical"]
-        )
-
-        anomaly_count = sum(
-            1
-            for record in risk_records
-            if record["anomaly_detected"]
-        )
+            if risk.get(
+                "anomaly_detected",
+                False,
+            ):
+                anomaly_count += 1
 
         average_risk = (
             sum(
-                record["risk_score"]
-                for record in risk_records
+                float(
+                    risk.get(
+                        "risk_score",
+                        0,
+                    )
+                    or 0
+                )
+                for risk in parcel_risks
             )
-            / len(risk_records)
+            / len(parcel_risks)
+            if parcel_risks
+            else 0.0
         )
 
         return {
             "model": {
-                "type": "Explainable composite land-risk index",
+                "type": (
+                    "Integrated explainable "
+                    "land-risk index"
+                ),
                 "status": "pilot",
                 "statistical_probability": False,
-                "weights": {
-                    "dispute_pressure": self.DISPUTE_WEIGHT,
-                    "population_pressure": self.POPULATION_WEIGHT,
-                    "land_use_pressure": self.LAND_USE_WEIGHT,
-                    "anomaly_pressure": self.ANOMALY_WEIGHT,
-                },
+                "ml_model_available": (
+                    self.ml_available
+                ),
             },
+
             "summary": {
-                "records_analyzed": len(risk_records),
+                "records_analyzed": len(
+                    parcel_risks
+                ),
                 "average_risk_score": round(
                     average_risk,
                     2,
                 ),
-                "high_or_critical_records": high_risk_count,
-                "anomalies_detected": anomaly_count,
-                "risk_distribution": risk_distribution,
+                "anomalies_detected": (
+                    anomaly_count
+                ),
+                "risk_distribution": (
+                    risk_distribution
+                ),
             },
-            # IMPORTANT:
-            # LandHotspotService / land_analysis.py can consume
-            # this list directly as "records".
-            "records": risk_records,
-            # Compatibility alias for integrations expecting
-            # "parcel_risks".
-            "parcel_risks": risk_records,
+
+            "records": parcel_risks,
+
+            # This is the key compatibility field used by
+            # IntegratedLandRiskService and the GIS hotspot route.
+            "parcel_risks": parcel_risks,
         }
 
     # ========================================================
-    # RISK LEVEL
+    # ML MODEL LOADING
+    # ========================================================
+
+    def _load_ml_model(self):
+
+        """
+        Load the trained Random Forest model if available.
+
+        Failure to load the model does NOT break the
+        land-risk engine.
+        """
+
+        self.ml_model = None
+
+        self.ml_available = False
+
+
+        if joblib is None:
+
+            return
+
+
+        if not MODEL_PATH.exists():
+
+            return
+
+
+        try:
+
+            self.ml_model = joblib.load(
+                MODEL_PATH
+            )
+
+            self.ml_available = True
+
+        except Exception:
+
+            self.ml_model = None
+
+            self.ml_available = False
+
+
+    # ========================================================
+    # NORMALIZATION
     # ========================================================
 
     @staticmethod
-    def _risk_level(score: float) -> str:
+    def _normalize(
+        value: float,
+        minimum: float,
+        maximum: float
+    ) -> float:
 
-        if score >= 80:
-            return "Critical"
+        if maximum <= minimum:
 
-        if score >= 60:
-            return "High"
+            return 0.0
 
-        if score >= 30:
-            return "Moderate"
 
-        return "Low"
+        normalized = (
+            (value - minimum)
+            /
+            (maximum - minimum)
+        )
+
+
+        return float(
+            max(
+                0.0,
+                min(
+                    1.0,
+                    normalized
+                )
+            )
+        )
+
 
     # ========================================================
-    # EXPLANATION
+    # LAND-USE PRESSURE
     # ========================================================
 
     @staticmethod
-    def _build_explanation(
-        row: pd.Series,
-    ) -> List[str]:
+    def _land_use_score(
+        land_use: str
+    ) -> float:
 
-        explanations: List[str] = []
+        if not land_use:
 
-        dispute_score = float(
-            row["_dispute_score"]
+            return 30.0
+
+
+        value = (
+            str(land_use)
+            .strip()
+            .lower()
         )
 
-        population_score = float(
-            row["_population_score"]
+
+        scores = {
+
+            "agricultural": 35.0,
+
+            "forest": 15.0,
+
+            "residential": 75.0,
+
+            "industrial": 100.0,
+
+            "commercial": 90.0,
+
+            "mixed": 70.0,
+
+            "urban": 85.0,
+
+            "institutional": 70.0,
+
+            "infrastructure": 80.0,
+
+        }
+
+
+        return scores.get(
+            value,
+            30.0
         )
 
-        land_use_score = float(
-            row["_land_use_score"]
+
+    # ========================================================
+    # ANOMALY DETECTION
+    # ========================================================
+
+    def _detect_anomalies(
+        self,
+        records: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+
+        if len(records) < 5:
+
+            return {
+                "available": False,
+                "anomaly_count": 0,
+                "scores": [0.0] * len(records)
+            }
+
+
+        values = []
+
+        for record in records:
+
+            values.append(
+                [
+                    float(
+                        record.get(
+                            "dispute_count",
+                            0
+                        )
+                        or 0
+                    ),
+
+                    float(
+                        record.get(
+                            "population",
+                            0
+                        )
+                        or 0
+                    )
+                ]
+            )
+
+
+        matrix = np.asarray(
+            values,
+            dtype=float
         )
 
-        anomaly_score = float(
-            row["_anomaly_score"]
+
+        model = IsolationForest(
+            contamination=0.1,
+            random_state=42
         )
 
-        if dispute_score >= 70:
-            explanations.append(
-                "High observed dispute pressure."
-            )
-        elif dispute_score >= 40:
-            explanations.append(
-                "Moderate observed dispute pressure."
-            )
-        elif dispute_score > 0:
-            explanations.append(
-                "Some historical dispute activity is present."
+
+        predictions = model.fit_predict(
+            matrix
+        )
+
+
+        anomaly_scores = model.decision_function(
+            matrix
+        )
+
+
+        anomaly_flags = (
+            predictions == -1
+        )
+
+
+        return {
+            "available": True,
+            "anomaly_count": int(
+                anomaly_flags.sum()
+            ),
+            "scores": anomaly_scores.tolist(),
+            "flags": anomaly_flags.tolist()
+        }
+
+
+    # ========================================================
+    # ML FEATURE BUILDER
+    # ========================================================
+
+    def _build_ml_features(
+        self,
+        record: Dict[str, Any]
+    ) -> pd.DataFrame:
+
+        """
+        Convert a parcel record into the feature structure
+        expected by the trained model.
+
+        The exact columns are aligned with the training
+        feature names when the model exposes them.
+        """
+
+        if not self.ml_available:
+
+            return pd.DataFrame()
+
+
+        if not hasattr(
+            self.ml_model,
+            "feature_names_in_"
+        ):
+
+            return pd.DataFrame()
+
+
+        feature_names = list(
+            self.ml_model.feature_names_in_
+        )
+
+
+        row = {}
+
+
+        for feature in feature_names:
+
+            value = record.get(
+                feature,
+                0
             )
 
-        if population_score >= 70:
-            explanations.append(
-                "High population pressure relative "
-                "to the uploaded dataset."
-            )
-        elif population_score >= 40:
-            explanations.append(
-                "Moderate population pressure relative "
-                "to the uploaded dataset."
+
+            if value is None:
+
+                value = 0
+
+
+            try:
+
+                value = float(
+                    value
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                value = 0.0
+
+
+            row[feature] = value
+
+
+        return pd.DataFrame(
+            [row],
+            columns=feature_names
+        )
+
+
+    # ========================================================
+    # ML PREDICTION
+    # ========================================================
+
+    def _predict_ml(
+        self,
+        record: Dict[str, Any]
+    ) -> Dict[str, Any]:
+
+        if not self.ml_available:
+
+            return {
+                "available": False,
+                "prediction": None,
+                "probability": None,
+                "status": "model_not_available"
+            }
+
+
+        try:
+
+            X = self._build_ml_features(
+                record
             )
 
-        if land_use_score >= 80:
-            explanations.append(
-                "Land-use category indicates relatively "
-                "high development pressure in this pilot model."
-            )
-        elif land_use_score >= 50:
-            explanations.append(
-                "Land-use category indicates moderate "
-                "development pressure in this pilot model."
+
+            if X.empty:
+
+                return {
+                    "available": False,
+                    "prediction": None,
+                    "probability": None,
+                    "status": "feature_mapping_unavailable"
+                }
+
+
+            prediction = self.ml_model.predict(
+                X
+            )[0]
+
+
+            probability = (
+                self.ml_model
+                .predict_proba(X)[0][1]
             )
 
-        if anomaly_score >= 70:
-            explanations.append(
-                "Unusual data pattern detected by "
-                "the anomaly model."
+
+            return {
+                "available": True,
+                "prediction": int(
+                    prediction
+                ),
+                "probability": round(
+                    float(
+                        probability
+                    ),
+                    4
+                ),
+                "status": "active"
+            }
+
+
+        except Exception as exc:
+
+            return {
+                "available": False,
+                "prediction": None,
+                "probability": None,
+                "status": "prediction_error",
+                "error": str(exc)
+            }
+
+
+    # ========================================================
+    # SINGLE RECORD RISK
+    # ========================================================
+
+    def calculate_risk(
+        self,
+        record: Dict[str, Any],
+        all_records: List[Dict[str, Any]] | None = None
+    ) -> Dict[str, Any]:
+
+        if all_records is None:
+
+            all_records = [record]
+
+
+        # ----------------------------------------------------
+        # Dispute pressure
+        # ----------------------------------------------------
+
+        dispute_count = float(
+            record.get(
+                "dispute_count",
+                0
             )
-        elif anomaly_score >= 40:
-            explanations.append(
-                "Somewhat unusual data pattern detected."
+            or 0
+        )
+
+
+        maximum_disputes = max(
+            [
+                float(
+                    item.get(
+                        "dispute_count",
+                        0
+                    )
+                    or 0
+                )
+                for item in all_records
+            ],
+            default=0.0
+        )
+
+
+        dispute_pressure = (
+            self._normalize(
+                dispute_count,
+                0.0,
+                maximum_disputes
+            )
+            * 100.0
+            if maximum_disputes > 0
+            else 0.0
+        )
+
+
+        # ----------------------------------------------------
+        # Population pressure
+        # ----------------------------------------------------
+
+        population = float(
+            record.get(
+                "population",
+                0
+            )
+            or 0
+        )
+
+
+        populations = [
+            float(
+                item.get(
+                    "population",
+                    0
+                )
+                or 0
+            )
+            for item in all_records
+        ]
+
+
+        max_population = max(
+            populations,
+            default=0.0
+        )
+
+
+        population_pressure = (
+            self._normalize(
+                population,
+                0.0,
+                max_population
+            )
+            * 100.0
+            if max_population > 0
+            else 0.0
+        )
+
+
+        # ----------------------------------------------------
+        # Land-use pressure
+        # ----------------------------------------------------
+
+        land_use = record.get(
+            "land_use"
+        )
+
+
+        land_use_pressure = (
+            self._land_use_score(
+                land_use
+            )
+        )
+
+
+        # ----------------------------------------------------
+        # Anomaly pressure
+        # ----------------------------------------------------
+
+        anomaly_result = (
+            self._detect_anomalies(
+                all_records
+            )
+        )
+
+
+        anomaly_pressure = 0.0
+
+        anomaly_detected = False
+
+
+        if anomaly_result["available"]:
+
+            record_index = all_records.index(
+                record
             )
 
-        if not explanations:
-            explanations.append(
-                "No major risk indicators were detected "
-                "by the current pilot model."
+            flags = anomaly_result.get(
+                "flags",
+                []
             )
 
-        return explanations
+            if (
+                record_index
+                <
+                len(flags)
+            ):
+
+                anomaly_detected = bool(
+                    flags[
+                        record_index
+                    ]
+                )
+
+
+            if anomaly_detected:
+
+                anomaly_pressure = 100.0
+
+
+        # ----------------------------------------------------
+        # Existing composite score
+        # ----------------------------------------------------
+
+        composite_score = (
+
+            self.DISPUTE_WEIGHT
+            * dispute_pressure
+
+            +
+
+            self.POPULATION_WEIGHT
+            * population_pressure
+
+            +
+
+            self.LAND_USE_WEIGHT
+            * land_use_pressure
+
+            +
+
+            self.ANOMALY_WEIGHT
+            * anomaly_pressure
+        )
+
+
+        composite_score = round(
+            float(
+                max(
+                    0.0,
+                    min(
+                        100.0,
+                        composite_score
+                    )
+                )
+            ),
+            2
+        )
+
+
+        # ----------------------------------------------------
+        # ML prediction
+        # ----------------------------------------------------
+
+        ml_result = self._predict_ml(
+            record
+        )
+
+
+        # ----------------------------------------------------
+        # Final integrated score
+        # ----------------------------------------------------
+
+        if (
+            ml_result["available"]
+            and
+            ml_result["probability"]
+            is not None
+        ):
+
+            ml_score = (
+                float(
+                    ml_result[
+                        "probability"
+                    ]
+                )
+                * 100.0
+            )
+
+
+            final_score = (
+                self.EXISTING_WEIGHT
+                * composite_score
+                +
+                self.ML_WEIGHT
+                * ml_score
+            )
+
+
+            scoring_mode = (
+                "Integrated composite + ML"
+            )
+
+        else:
+
+            final_score = (
+                composite_score
+            )
+
+            ml_score = None
+
+            scoring_mode = (
+                "Composite risk only"
+            )
+
+
+        final_score = round(
+            float(
+                max(
+                    0.0,
+                    min(
+                        100.0,
+                        final_score
+                    )
+                )
+            ),
+            2
+        )
+
+
+        # ----------------------------------------------------
+        # Risk level
+        # ----------------------------------------------------
+
+        if final_score >= 80:
+
+            risk_level = "Critical"
+
+        elif final_score >= 60:
+
+            risk_level = "High"
+
+        elif final_score >= 30:
+
+            risk_level = "Moderate"
+
+        else:
+
+            risk_level = "Low"
+
+
+        # ----------------------------------------------------
+        # Explanation
+        # ----------------------------------------------------
+
+        why = []
+
+
+        if dispute_pressure >= 60:
+
+            why.append(
+                "High dispute pressure"
+            )
+
+
+        if population_pressure >= 60:
+
+            why.append(
+                "High population pressure"
+            )
+
+
+        if land_use_pressure >= 75:
+
+            why.append(
+                "High land-use pressure"
+            )
+
+
+        if anomaly_detected:
+
+            why.append(
+                "Anomalous dispute/population pattern"
+            )
+
+
+        if (
+            ml_result["available"]
+            and
+            ml_result["probability"]
+            >= 0.60
+        ):
+
+            why.append(
+                "ML model indicates elevated "
+                "next-period conflict risk"
+            )
+
+
+        if not why:
+
+            why.append(
+                "No dominant high-risk indicator detected"
+            )
+
+
+        # ----------------------------------------------------
+        # Result
+        # ----------------------------------------------------
+
+        return {
+
+            "parcel_id":
+                record.get(
+                    "parcel_id"
+                ),
+
+            "risk_score":
+                final_score,
+
+            "risk_level":
+                risk_level,
+
+            "scoring_mode":
+                scoring_mode,
+
+            "components": {
+
+                "dispute_pressure":
+                    round(
+                        dispute_pressure,
+                        2
+                    ),
+
+                "population_pressure":
+                    round(
+                        population_pressure,
+                        2
+                    ),
+
+                "land_use_pressure":
+                    round(
+                        land_use_pressure,
+                        2
+                    ),
+
+                "anomaly_pressure":
+                    round(
+                        anomaly_pressure,
+                        2
+                    ),
+
+                "composite_score":
+                    composite_score,
+
+                "ml_probability":
+                    ml_result[
+                        "probability"
+                    ],
+
+                "ml_score":
+                    ml_score
+            },
+
+            "ml_prediction":
+                ml_result,
+
+            "anomaly_detected":
+                anomaly_detected,
+
+            "why":
+                why,
+
+            "metadata": {
+
+                "type":
+                    "Integrated explainable "
+                    "land-risk index",
+
+                "ml_model_available":
+                    self.ml_available,
+
+                "ml_model_path":
+                    str(
+                        MODEL_PATH
+                    ),
+
+                "statistical_probability":
+                    False
+            }
+        }
+
+
+    # ========================================================
+    # MULTIPLE RECORDS
+    # ========================================================
+
+    def calculate_risks(
+        self,
+        records: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+
+        results = []
+
+
+        for record in records:
+
+            results.append(
+                self.calculate_risk(
+                    record,
+                    records
+                )
+            )
+
+
+        return results
+
+
+# ============================================================
+# SERVICE INSTANCE
+# ============================================================
+
+land_risk_service = (
+    LandRiskService()
+)

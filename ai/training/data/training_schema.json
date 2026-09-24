@@ -1,0 +1,83 @@
+{
+  "dataset_name": "India Land Conflict Risk Training Dataset",
+  "version": "1.0",
+  "unit_of_observation": "district-year",
+  "target": {
+    "name": "conflict_next_period",
+    "type": "binary",
+    "description": "Whether a documented land-conflict event is observed in the subsequent prediction period.",
+    "values": {
+      "0": "No documented conflict",
+      "1": "Documented conflict"
+    }
+  },
+  "features": [
+    {
+      "name": "district",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "state",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "year",
+      "type": "integer",
+      "required": true
+    },
+    {
+      "name": "population",
+      "type": "numeric",
+      "required": false
+    },
+    {
+      "name": "population_growth",
+      "type": "numeric",
+      "required": false
+    },
+    {
+      "name": "forest_area",
+      "type": "numeric",
+      "required": false
+    },
+    {
+      "name": "agricultural_area",
+      "type": "numeric",
+      "required": false
+    },
+    {
+      "name": "non_agricultural_area",
+      "type": "numeric",
+      "required": false
+    },
+    {
+      "name": "cultivable_wasteland",
+      "type": "numeric",
+      "required": false
+    },
+    {
+      "name": "irrigated_area",
+      "type": "numeric",
+      "required": false
+    },
+    {
+      "name": "land_use_change",
+      "type": "numeric",
+      "required": false
+    },
+    {
+      "name": "previous_conflict_count",
+      "type": "numeric",
+      "required": false
+    }
+  ],
+  "metadata": {
+    "primary_conflict_source": "Land Conflict Watch",
+    "land_use_source": "Department of Agriculture and Farmers Welfare, Government of India",
+    "geography_level": "district",
+    "temporal_strategy": "time-aware",
+    "label_policy": "Do not fabricate conflict labels"
+  }
+}
